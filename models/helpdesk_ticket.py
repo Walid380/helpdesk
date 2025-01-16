@@ -39,11 +39,11 @@ class HelpdeskTicket(models.Model):
         return stages.search(search_domain, order=order)
 
     number = fields.Char(string="Ticket number", default="/", readonly=True)
-    name = fields.Char(string="Title", required=True)
+    name = fields.Char(string="Objet", required=True)
     description = fields.Html(required=True, sanitize_style=True)
     user_id = fields.Many2one(
         comodel_name="res.users",
-        string="Assigned user",
+        string="Assiged client agent",
         tracking=True,
         index=True,
         domain="team_id and [('share', '=', False),('id', 'in', user_ids)] or [('share', '=', False)]",  # noqa: B950,E501
@@ -64,7 +64,7 @@ class HelpdeskTicket(models.Model):
         index=True,
         domain="['|',('team_ids', '=', team_id),('team_ids','=',False)]",
     )
-    partner_id = fields.Many2one(comodel_name="res.partner", string="Contact")
+    partner_id = fields.Many2one(comodel_name="res.partner", string="Reclamant")
     commercial_partner_id = fields.Many2one(
         string="Commercial Partner",
         store=True,
@@ -90,16 +90,22 @@ class HelpdeskTicket(models.Model):
         help="Channel indicates where the source of a ticket"
         "comes from (it could be a phone call, an email...)",
     )
-    category_id = fields.Many2one(
-        comodel_name="helpdesk.ticket.category",
-        string="Category",
-    )
+    category_id = fields.Selection(
+    selection=[
+        ('Citoyen', 'Citoyen'),
+        ('Entreprise', 'Entreprise'),
+        ('Cellule de veille', 'Cellule de veille'),
+    ],
+    string="Category",
+    required=True,  # Si vous souhaitez rendre ce champ obligatoire
+    help="Category of the ticket.",
+)
     team_id = fields.Many2one(
         comodel_name="helpdesk.ticket.team",
         string="Team",
         index=True,
     )
-    priority = fields.Selection(
+    priority = fields.Selection(  
         selection=[
             ("0", "Low"),
             ("1", "Medium"),
